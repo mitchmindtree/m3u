@@ -2,6 +2,11 @@
 name = "m3u"
 version = "0.1.0"
 authors = ["mitchmindtree <mitchell.nordine@gmail.com>"]
+readme = "README.md"
+keywords = ["m3u", "playlist", "multimedia", "music", "audio"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mitchmindtree/m3u.git"
+homepage = "https://github.com/mitchmindtree/m3u"
 
 [dependencies]
 url = "1.2.4"

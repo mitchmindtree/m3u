@@ -1,5 +1,6 @@
 [package]
 name = "m3u"
+description = "A crate for reading and writing `.m3u` files - the de facto standard for multimedia playlists."
 version = "0.1.0"
 authors = ["mitchmindtree <mitchell.nordine@gmail.com>"]
 readme = "README.md"

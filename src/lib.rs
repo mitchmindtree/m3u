@@ -15,6 +15,7 @@ mod write;
 pub use read::{Reader, EntryReader, EntryExtReader, Entries, EntryExts,
                EntryExtReaderConstructionError, ReadEntryExtError};
 pub use write::{Writer, EntryWriter, EntryExtWriter};
+pub use url::Url;
 
 /// An entry in an **M3U** multimedia playlist.
 ///
@@ -72,4 +73,26 @@ impl Entry {
         }
     }
 
+    /// Extend the entry with extra information including the duration in seconds and a name.
+    pub fn extend<N>(self, duration_secs: u64, name: N) -> EntryExt
+        where N: Into<String>,
+    {
+        EntryExt {
+            extinf: ExtInf { duration_secs: duration_secs, name: name.into() },
+            entry: self,
+        }
+    }
+
+}
+
+/// A helper function to simplify creation of the `Entry`'s `Path` variant.
+pub fn path_entry<P>(path: P) -> Entry
+    where P: Into<std::path::PathBuf>,
+{
+    Entry::Path(path.into())
+}
+
+/// A helper function to simplify creation of the `Entry`'s `Url` variant.
+pub fn url_entry(url: &str) -> Result<Entry, url::ParseError> {
+    Url::parse(url).map(|url| Entry::Url(url))
 }

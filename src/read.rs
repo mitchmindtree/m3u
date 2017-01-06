@@ -183,7 +183,6 @@ impl<R> EntryExtReader<R>
             // Get the name or set it as an empty string.
             let name = parts.next().map(|s| s.trim().into()).unwrap_or_else(String::new);
 
-            // If the duration was missing, return `None`.
             Some(ExtInf {
                 duration_secs: duration_secs,
                 name: name,

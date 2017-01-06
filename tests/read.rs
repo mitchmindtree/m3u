@@ -27,13 +27,13 @@ fn mixed() {
 fn ext() {
     let expected = vec![
         m3u::path_entry(r"C:\Documents and Settings\I\My Music\Sample.mp3")
-            .extend(123, "Sample artist - Sample title"),
+            .extend(123.0, "Sample artist - Sample title"),
         m3u::path_entry(r"C:\Documents and Settings\I\My Music\Greatest Hits\Example.ogg")
-            .extend(321, "Example Artist - Example title"),
+            .extend(321.0, "Example Artist - Example title"),
         m3u::path_entry(r"Sample.mp3")
-            .extend(123, "Sample artist - Sample title"),
+            .extend(123.0, "Sample artist - Sample title"),
         m3u::path_entry(r"Greatest Hits\Example.ogg")
-            .extend(321, "Example Artist - Example title"),
+            .extend(321.0, "Example Artist - Example title"),
     ];
 
     let path = std::path::Path::new("tests/ext.m3u");

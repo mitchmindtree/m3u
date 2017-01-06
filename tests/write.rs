@@ -46,13 +46,13 @@ fn entry_ext() {
     // Create a multimedia playlist, including the duration in seconds and name for each entry.
     let playlist = vec![
         m3u::path_entry(r"C:\Documents and Settings\I\My Music\Sample.mp3")
-            .extend(123, "Sample artist - Sample title"),
+            .extend(123.0, "Sample artist - Sample title"),
         m3u::path_entry(r"C:\Documents and Settings\I\My Music\Greatest Hits\Example.ogg")
-            .extend(321, "Example Artist - Example title"),
+            .extend(321.0, "Example Artist - Example title"),
         m3u::path_entry(r"Sample.mp3")
-            .extend(123, "Sample artist - Sample title"),
+            .extend(123.0, "Sample artist - Sample title"),
         m3u::path_entry(r"Greatest Hits\Example.ogg")
-            .extend(321, "Example Artist - Example title"),
+            .extend(321.0, "Example Artist - Example title"),
     ];
 
     const FILEPATH: &'static str = "tests/playlist_ext.m3u";

@@ -23,7 +23,7 @@ pub use url::Url;
 ///
 /// In rare cases an `Entry` may point to another `.m3u` file. If a user wishes to support this in
 /// their application, they must be sure to handle cycles within the **M3U** graph.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq)]
 pub enum Entry {
     /// The entry resides at the given `Path`.
     ///
@@ -37,7 +37,7 @@ pub enum Entry {
 }
 
 /// An entry with some associated extra information.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EntryExt {
     /// The M3U entry. Can be either a `Path` or `Url`.
     pub entry: Entry,
@@ -46,10 +46,12 @@ pub struct EntryExt {
 }
 
 /// Extra information associated with an M3U entry.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ExtInf {
     /// The duration of the media's runtime in seconds.
-    pub duration_secs: u64,
+    ///
+    /// Note that some `m3u` extended formats specify streams with a `-1` duration.
+    pub duration_secs: f64,
     /// The name of the media. E.g. "Aphex Twin - Windowlicker".
     pub name: String,
 }
@@ -74,7 +76,7 @@ impl Entry {
     }
 
     /// Extend the entry with extra information including the duration in seconds and a name.
-    pub fn extend<N>(self, duration_secs: u64, name: N) -> EntryExt
+    pub fn extend<N>(self, duration_secs: f64, name: N) -> EntryExt
         where N: Into<String>,
     {
         EntryExt {

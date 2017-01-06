@@ -171,31 +171,23 @@ impl<R> EntryExtReader<R>
         fn read_extinf(mut line: &str) -> Option<ExtInf> {
             line = &line[TAG.len()..];
 
-            // The duration and track title should be delimited by a comma.
-            let mut parts = line.split(',');
-            let mut duration_secs: Option<u64> = None;
-            let mut name: Option<String> = None;
+            // The duration and track title should be delimited by the first comma.
+            let mut parts = line.splitn(2, ',');
 
-            // Get the duration.
-            if let Some(s) = parts.next() {
-                if let Ok(secs) = s.parse() {
-                    duration_secs = Some(secs);
-                }
-            }
+            // Get the duration, or return `None` if there isn't any.
+            let duration_secs = match parts.next().and_then(|s| s.parse().ok()) {
+                Some(secs) => secs,
+                None => return None,
+            };
 
-            // Get the name.
-            if let Some(s) = parts.next() {
-                name = Some(s.trim().into());
-            }
+            // Get the name or set it as an empty string.
+            let name = parts.next().map(|s| s.trim().into()).unwrap_or_else(String::new);
 
-            // If either the duration or name were missing, return `None`.
-            match (duration_secs, name) {
-                (Some(secs), Some(name)) => Some(ExtInf {
-                    duration_secs: secs,
-                    name: name,
-                }),
-                _ => None,
-            }
+            // If the duration was missing, return `None`.
+            Some(ExtInf {
+                duration_secs: duration_secs,
+                name: name,
+            })
         }
 
         // Skip empty lines and comments until we find the "#EXTINF:" tag.

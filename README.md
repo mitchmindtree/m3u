@@ -1,9 +1,7 @@
-m3u [![Build Status](https://travis-ci.org/mitchmindtree/m3u.svg?branch=master)](https://travis-ci.org/mitchmindtree/m3u) [![Crates.io](https://img.shields.io/crates/v/m3u.svg)](https://crates.io/crates/m3u) [![Crates.io](https://img.shields.io/crates/l/m3u.svg)](https://github.com/mitchmindtree/m3u/blob/master/LICENSE-MIT)
+m3u [![Build Status](https://travis-ci.org/mitchmindtree/m3u.svg?branch=master)](https://travis-ci.org/mitchmindtree/m3u) [![Crates.io](https://img.shields.io/crates/v/m3u.svg)](https://crates.io/crates/m3u) [![Crates.io](https://img.shields.io/crates/l/m3u.svg)](https://github.com/mitchmindtree/m3u/blob/master/LICENSE-MIT) [![docs.rs](https://docs.rs/m3u/badge.svg)](https://docs.rs/m3u/)
 ===
 
 A lib for reading and writing `.m3u` files - the de facto standard for multimedia playlists.
-
-Please read [the documentation](https://docs.rs/m3u/).
 
 Example
 -------

@@ -80,3 +80,41 @@ fn entry_ext() {
 
     std::fs::remove_file(FILEPATH).unwrap();
 }
+
+
+#[test]
+fn entry_x_stream() {
+
+    // Create a variant playlist.
+    let playlist = vec![
+        m3u::url_entry(r"http://example.com/low/index.m3u8").unwrap()
+            .x_stream(1, 150000, "416x234", "avc1.42e00a,mp4a.40.2"),
+        m3u::url_entry(r"http://example.com/mid/index.m3u8").unwrap()
+            .x_stream(1, 240000, "416x234", "avc1.42e00a,mp4a.40.2"),
+    ];
+
+    const FILEPATH: &'static str = "tests/playlist_x_stream.m3u";
+
+    if std::path::Path::new(FILEPATH).exists() {
+        std::fs::remove_file(FILEPATH).unwrap();
+    }
+
+    // Write the playlist to the file.
+    {
+        let mut file = std::fs::File::create(FILEPATH).unwrap();
+        let mut writer = m3u::Writer::new_x_stream(&mut file).unwrap();
+        for entry in &playlist {
+            writer.write_x_stream(entry).unwrap();
+        }
+        writer.flush().unwrap();
+    }
+
+    // Read the playlist from the file.
+    {
+        let mut reader = m3u::Reader::open_x_stream(FILEPATH).unwrap();
+        let read_playlist: Vec<_> = reader.entry_exts().map(|entry| entry.unwrap()).collect();
+        assert_eq!(&playlist, &read_playlist);
+    }
+
+    std::fs::remove_file(FILEPATH).unwrap();
+}

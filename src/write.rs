@@ -1,4 +1,4 @@
-use {Entry, EntryExt};
+use {Entry, EntryExt, EntryExtXStream};
 use std;
 use std::io::Write;
 
@@ -20,6 +20,8 @@ pub struct Writer<W, E>
 pub type EntryWriter<W> = Writer<W, Entry>;
 /// A `Writer` that specifically writes `EntryExt`s.
 pub type EntryExtWriter<W> = Writer<W, EntryExt>;
+/// A `Writer` that specifically writes `EntryExtXStream`s.
+pub type EntryExtXStreamWriter<W> = Writer<W, EntryExtXStream>;
 
 impl<W, E> Writer<W, E>
     where W: Write,
@@ -95,6 +97,59 @@ impl<W> EntryExtWriter<W>
 
 }
 
+impl<W> EntryExtXStreamWriter<W>
+    where W: Write,
+{
+
+    /// Create a writer that writes extended M3U `EntryExtStream`s.
+    ///
+    /// The `#EXTM3U` header line is written immediately.
+    pub fn new_x_stream(mut writer: W) -> Result<Self, std::io::Error> {
+        let mut line_buffer = Vec::new();
+        try!(writeln!(&mut line_buffer, "#EXTM3U"));
+        try!(writer.write_all(&line_buffer));
+        Ok(Self::new_inner(writer, line_buffer))
+    }
+
+    /// Attempt to write the given `EntryExtXStream` to the given `writer`.
+    ///
+    /// First writes the `#EXT-X-STREAM-INF:` line, then writes the entry line.
+    pub fn write_x_stream(&mut self, entry_ext: &EntryExtXStream) -> Result<(), std::io::Error> {
+        let Writer { ref mut writer, ref mut line_buffer, .. } = *self;
+        line_buffer.clear();
+        let extinf = &entry_ext.extinf;
+        try!(write!(line_buffer, "#EXT-X-STREAM-INF:"));
+        let mut attrs: Vec<(&str,String)> = vec![];
+        if extinf.program_id.is_some() {
+            attrs.push(("PROGRAM-ID", extinf.program_id.unwrap().to_string()));
+        }
+        if extinf.bandwidth.is_some() {
+            attrs.push(("BANDWIDTH", extinf.bandwidth.unwrap().to_string()));
+        }
+        if extinf.resolution.is_some() {
+            attrs.push(("RESOLUTION", extinf.resolution.clone().unwrap()));
+        }
+        if extinf.codecs.is_some() {
+            attrs.push(("CODECS", extinf.codecs.clone().unwrap()));
+        }
+        for (idx, tup) in attrs.iter().enumerate() {
+            let (ref name, ref value) = *tup;
+            let separator = match idx < attrs.len() - 1 {
+                true => ",",
+                false => "",
+            };
+            match value.find(',') {
+                None => write!(line_buffer,"{}={}{}", name, value, separator)?,
+                Some(_) => write!(line_buffer,"{}=\"{}\"{}", name, value, separator)?,
+            };
+        }
+        writeln!(line_buffer, "")?;
+        try!(write_entry(line_buffer, &entry_ext.entry));
+        writer.write_all(line_buffer)
+    }
+
+}
+
 /// Write the given `Entry` into the given `line_buffer`.
 ///
 /// Writes the `Path` or `Url` in plain text, ending with a newline.
@@ -104,7 +159,6 @@ fn write_entry(line_buffer: &mut Vec<u8>, entry: &Entry) -> Result<(), std::io::
         Entry::Url(ref url) => writeln!(line_buffer, "{}", url),
     }
 }
-
 
 impl<W, E> Drop for Writer<W, E>
     where W: Write,

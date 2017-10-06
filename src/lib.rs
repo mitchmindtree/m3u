@@ -14,7 +14,7 @@ mod write;
 
 pub use read::{Reader, EntryReader, EntryExtReader, Entries, EntryExts,
                EntryExtReaderConstructionError, ReadEntryExtError};
-pub use write::{Writer, EntryWriter, EntryExtWriter};
+pub use write::{Writer, EntryWriter, EntryExtWriter, EntryExtXStreamWriter};
 pub use url::Url;
 
 /// An entry in an **M3U** multimedia playlist.
@@ -56,6 +56,32 @@ pub struct ExtInf {
     pub name: String,
 }
 
+/// An entry with variant extension.
+#[derive(Clone, Debug, PartialEq)]
+pub struct EntryExtXStream {
+    /// The M3U entry. Can be either a `Path` or `Url`.
+    pub entry: Entry,
+    /// Extra information associated with the M3U entry.
+    pub extinf: ExtXStreamInf,
+}
+
+/// Variant extension (EXT-X-STREAM-INF)
+#[derive(Clone, Debug, PartialEq)]
+pub struct ExtXStreamInf {
+    /// Identifies a particular presentation within the scope of the playlist file.
+    /// A playlist can have multiple EXT-X-STREAM-INF entries with the same program_id to
+    /// identify different bandwidths of the same presentation.
+    pub program_id: Option<u64>,
+    /// Bits per second.
+    pub bandwidth: Option<u64>,
+    /// Resolution as [width]x[height], i.e. "416x234"
+    pub resolution: Option<String>,
+    /// Comma separated list of formats as defined in https://tools.ietf.org/html/rfc6381
+    /// I.e. "avc1.42e00a,mp4a.40.2"
+    pub codecs: Option<String>,
+    // there are more fields that potentially can go into an EXT-X-STREAM-INF
+    // https://tools.ietf.org/html/draft-pantos-http-live-streaming-16#section-4.3.4.2
+}
 
 impl Entry {
 
@@ -85,6 +111,26 @@ impl Entry {
         }
     }
 
+    /// Extend the entry with EXT-X-STREAM-INF used to construct variant playlists.
+    pub fn x_stream<M,N>(
+        self,
+        program_id: u64,
+        bandwidth: u64,
+        resolution: M,
+        codecs:N
+    ) -> EntryExtXStream
+        where M: Into<String>, N: Into<String>,
+    {
+        EntryExtXStream {
+            extinf: ExtXStreamInf {
+                program_id: Some(program_id),
+                bandwidth: Some(bandwidth),
+                resolution: Some(resolution.into()),
+                codecs: Some(codecs.into()),
+            },
+            entry: self,
+        }
+    }
 }
 
 /// A helper function to simplify creation of the `Entry`'s `Path` variant.

@@ -42,3 +42,18 @@ fn ext() {
 
     assert_eq!(&entries, &expected);
 }
+
+#[test]
+fn x_stream() {
+    let expected = vec![
+        m3u::url_entry(r"http://example.com/low/index.m3u8").unwrap()
+            .x_stream(1, 150000, "416x234", "avc1.42e00a,mp4a.40.2"),
+        m3u::url_entry(r"http://example.com/mid/index.m3u8").unwrap()
+            .x_stream(1, 240000, "416x234", "avc1.42e00a,mp4a.40.2"),
+    ];
+
+    let path = std::path::Path::new("tests/extxstream.m3u");
+    let mut reader = m3u::Reader::open_x_stream(path).unwrap();
+    let entries: Vec<_> = reader.entry_exts().map(|e| e.unwrap()).collect();
+    assert_eq!(&entries, &expected);
+}

@@ -61,7 +61,7 @@ impl<W> EntryWriter<W>
     pub fn write_entry(&mut self, entry: &Entry) -> Result<(), std::io::Error> {
         let Writer { ref mut writer, ref mut line_buffer, .. } = *self;
         line_buffer.clear();
-        try!(write_entry(line_buffer, entry));
+        write_entry(line_buffer, entry)?;
         writer.write_all(line_buffer)
     }
 
@@ -76,8 +76,8 @@ impl<W> EntryExtWriter<W>
     /// The `#EXTM3U` header line is written immediately.
     pub fn new_ext(mut writer: W) -> Result<Self, std::io::Error> {
         let mut line_buffer = Vec::new();
-        try!(writeln!(&mut line_buffer, "#EXTM3U"));
-        try!(writer.write_all(&line_buffer));
+        writeln!(&mut line_buffer, "#EXTM3U")?;
+        writer.write_all(&line_buffer)?;
         Ok(Self::new_inner(writer, line_buffer))
     }
 
@@ -88,8 +88,12 @@ impl<W> EntryExtWriter<W>
         let Writer { ref mut writer, ref mut line_buffer, .. } = *self;
         line_buffer.clear();
         let extinf = &entry_ext.extinf;
-        try!(writeln!(line_buffer, "#EXTINF:{},{}", extinf.duration_secs, &extinf.name));
-        try!(write_entry(line_buffer, &entry_ext.entry));
+        writeln!(
+            line_buffer,
+            "#EXTINF:{},{}",
+            extinf.duration_secs, &extinf.name
+        )?;
+        write_entry(line_buffer, &entry_ext.entry)?;
         writer.write_all(line_buffer)
     }
 

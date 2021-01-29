@@ -131,8 +131,8 @@ impl<R> EntryExtReader<R>
         let mut line_buffer = String::new();
 
         loop {
-            let num_read_bytes = try!(reader.read_line(&mut line_buffer));
             let line = line_buffer.trim_left();
+            let num_read_bytes = reader.read_line(&mut line_buffer)?;
 
             // The first line of the extended M3U format should always be the "#EXTM3U" header.
             const HEADER: &str = "#EXTM3U";
@@ -195,7 +195,7 @@ impl<R> EntryExtReader<R>
         loop {
             // Read the next line or return `None` if we're done.
             line_buffer.clear();
-            if try!(reader.read_line(line_buffer)) == 0 {
+            if reader.read_line(line_buffer)? == 0 {
                 return Ok(None);
             }
 
@@ -223,7 +223,7 @@ impl<R> EntryExtReader<R>
             };
 
             // Read the next non-empty, non-comment line as an entry.
-            let entry = match try!(read_next_entry(reader, line_buffer)) {
+            let entry = match read_next_entry(reader, line_buffer)? {
                 None => return Ok(None),
                 Some(entry) => entry,
             };
@@ -253,7 +253,7 @@ impl EntryReader<std::io::BufReader<std::fs::File>> {
     pub fn open<P>(filename: P) -> Result<Self, std::io::Error>
         where P: AsRef<std::path::Path>,
     {
-        let file = try!(std::fs::File::open(filename));
+        let file = std::fs::File::open(filename)?;
         let buf_reader = std::io::BufReader::new(file);
         Ok(Self::new(buf_reader))
     }
@@ -269,7 +269,7 @@ impl EntryExtReader<std::io::BufReader<std::fs::File>> {
     pub fn open_ext<P>(filename: P) -> Result<Self, EntryExtReaderConstructionError>
         where P: AsRef<std::path::Path>,
     {
-        let file = try!(std::fs::File::open(filename));
+        let file = std::fs::File::open(filename)?;
         let buf_reader = std::io::BufReader::new(file);
         Self::new_ext(buf_reader)
     }
@@ -284,7 +284,7 @@ fn read_next_entry<R>(reader: &mut R, line_buffer: &mut String) -> Result<Option
     loop {
         // Read the next line or return `None` if we're done.
         line_buffer.clear();
-        if try!(reader.read_line(line_buffer)) == 0 {
+        if reader.read_line(line_buffer)? == 0 {
             return Ok(None);
         }
 

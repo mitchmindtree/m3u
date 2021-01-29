@@ -5,8 +5,6 @@
 //! There is no formal specification for the **M3U** format. This crate is implemented based on the
 //! rough description under the format's current wikipedia entry.
 
-#![warn(missing_docs)]
-
 pub extern crate url;
 
 mod read;

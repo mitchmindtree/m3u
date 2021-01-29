@@ -131,8 +131,8 @@ impl<R> EntryExtReader<R>
         let mut line_buffer = String::new();
 
         loop {
-            let line = line_buffer.trim_left();
             let num_read_bytes = reader.read_line(&mut line_buffer)?;
+            let line = line_buffer.trim_start();
 
             // The first line of the extended M3U format should always be the "#EXTM3U" header.
             const HEADER: &str = "#EXTM3U";
@@ -200,7 +200,7 @@ impl<R> EntryExtReader<R>
             }
 
             let extinf = {
-                let line = line_buffer.trim_left();
+                let line = line_buffer.trim_start();
 
                 match line.chars().next() {
                     // Skip empty lines.
@@ -216,7 +216,7 @@ impl<R> EntryExtReader<R>
                     // Due to the lack of official specification, it is unclear whether a mixture
                     // of tagged and non-tagged entries should be supported for the EXTM3U format.
                     Some(_) => {
-                        let entry = read_entry(line.trim_right());
+                        let entry = read_entry(line.trim_end());
                         return Err(ReadEntryExtError::ExtInfNotFound(entry));
                     },
                 }
@@ -288,14 +288,14 @@ fn read_next_entry<R>(reader: &mut R, line_buffer: &mut String) -> Result<Option
             return Ok(None);
         }
 
-        let line = line_buffer.trim_left();
+        let line = line_buffer.trim_start();
         match line.chars().next() {
             // Skip empty lines.
             None => continue,
             // Skip comments.
             Some('#') => continue,
             // Break when we have a non-empty, non-comment line.
-            _ => return Ok(Some(read_entry(line.trim_right()))),
+            _ => return Ok(Some(read_entry(line.trim_end()))),
         }
     }
 }

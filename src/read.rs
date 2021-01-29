@@ -11,6 +11,7 @@ use url;
 /// and entries are each read from a single line of plain text.
 ///
 /// A `Reader` will only attempt to read entries of type `E`.
+#[derive(Debug, Clone)]
 pub struct Reader<R, E>
     where R: std::io::BufRead,
 {
@@ -39,6 +40,7 @@ pub struct Entries<'r, R>
 /// An iterator that yields `EntryExt`s.
 ///
 /// All `EntryExt`s are lazily read from the inner buffered reader.
+#[derive(Debug)]
 pub struct EntryExts<'r, R>
     where R: 'r + std::io::BufRead,
 {

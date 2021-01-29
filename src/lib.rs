@@ -94,5 +94,5 @@ pub fn path_entry<P>(path: P) -> Entry
 
 /// A helper function to simplify creation of the `Entry`'s `Url` variant.
 pub fn url_entry(url: &str) -> Result<Entry, url::ParseError> {
-    Url::parse(url).map(|url| Entry::Url(url))
+    Url::parse(url).map(Entry::Url)
 }

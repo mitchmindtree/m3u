@@ -135,7 +135,7 @@ impl<R> EntryExtReader<R>
             let line = line_buffer.trim_left();
 
             // The first line of the extended M3U format should always be the "#EXTM3U" header.
-            const HEADER: &'static str = "#EXTM3U";
+            const HEADER: &str = "#EXTM3U";
             if line.len() >= HEADER.len() && &line[..HEADER.len()] == HEADER {
                 break;
             }
@@ -165,7 +165,7 @@ impl<R> EntryExtReader<R>
     fn read_next_entry(&mut self) -> Result<Option<EntryExt>, ReadEntryExtError> {
         let Reader { ref mut reader, ref mut line_buffer, .. } = *self;
 
-        const TAG: &'static str = "#EXTINF:";
+        const TAG: &str = "#EXTINF:";
 
         // Read an `ExtInf` from the given line.
         //

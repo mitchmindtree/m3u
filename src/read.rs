@@ -355,17 +355,8 @@ impl From<std::io::Error> for ReadEntryExtError {
     }
 }
 
-
 impl std::error::Error for EntryExtReaderConstructionError {
-    fn description(&self) -> &str {
-        match *self {
-            EntryExtReaderConstructionError::HeaderNotFound =>
-                "the \"#EXTM3U\" header was not found",
-            EntryExtReaderConstructionError::BufRead(ref err) =>
-                std::error::Error::description(err),
-        }
-    }
-    fn cause(&self) -> Option<&std::error::Error> {
+    fn cause(&self) -> Option<&dyn std::error::Error> {
         match *self {
             EntryExtReaderConstructionError::HeaderNotFound => None,
             EntryExtReaderConstructionError::BufRead(ref err) => Some(err),
@@ -374,15 +365,7 @@ impl std::error::Error for EntryExtReaderConstructionError {
 }
 
 impl std::error::Error for ReadEntryExtError {
-    fn description(&self) -> &str {
-        match *self {
-            ReadEntryExtError::ExtInfNotFound(_) =>
-                "the \"#EXTINF:\" tag was not found or was incorrectly formatted",
-            ReadEntryExtError::BufRead(ref err) =>
-                std::error::Error::description(err),
-        }
-    }
-    fn cause(&self) -> Option<&std::error::Error> {
+    fn cause(&self) -> Option<&dyn std::error::Error> {
         match *self {
             ReadEntryExtError::ExtInfNotFound(_) => None,
             ReadEntryExtError::BufRead(ref err) => Some(err),
@@ -390,14 +373,14 @@ impl std::error::Error for ReadEntryExtError {
     }
 }
 
-
 impl std::fmt::Display for EntryExtReaderConstructionError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match *self {
-            EntryExtReaderConstructionError::HeaderNotFound =>
-                write!(f, "{}", std::error::Error::description(self)),
-            EntryExtReaderConstructionError::BufRead(ref err) =>
-                err.fmt(f),
+            EntryExtReaderConstructionError::HeaderNotFound => {
+                write!(f, "the \"#EXTM3U\" header was not found")
+            }
+
+            EntryExtReaderConstructionError::BufRead(ref err) => err.fmt(f),
         }
     }
 }
@@ -405,10 +388,13 @@ impl std::fmt::Display for EntryExtReaderConstructionError {
 impl std::fmt::Display for ReadEntryExtError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match *self {
-            ReadEntryExtError::ExtInfNotFound(_) =>
-                write!(f, "{}", std::error::Error::description(self)),
-            ReadEntryExtError::BufRead(ref err) =>
-                err.fmt(f),
+            ReadEntryExtError::ExtInfNotFound(_) => {
+                write!(
+                    f,
+                    "the \"#EXTINF:\" tag was not found or was incorrectly formatted"
+                )
+            }
+            ReadEntryExtError::BufRead(ref err) => err.fmt(f),
         }
     }
 }

@@ -76,8 +76,8 @@ impl<R, E> Reader<R, E>
 
     fn new_inner(reader: R, line_buffer: String) -> Self {
         Reader {
-            reader: reader,
-            line_buffer: line_buffer,
+            reader,
+            line_buffer,
             entry: std::marker::PhantomData,
         }
     }
@@ -186,8 +186,8 @@ impl<R> EntryExtReader<R>
             let name = parts.next().map(|s| s.trim().into()).unwrap_or_else(String::new);
 
             Some(ExtInf {
-                duration_secs: duration_secs,
-                name: name,
+                duration_secs,
+                name,
             })
         }
 
@@ -229,10 +229,7 @@ impl<R> EntryExtReader<R>
             };
 
             return match extinf {
-                Some(extinf) => Ok(Some(EntryExt {
-                    entry: entry,
-                    extinf: extinf,
-                })),
+                Some(extinf) => Ok(Some(EntryExt { entry, extinf })),
                 None => Err(ReadEntryExtError::ExtInfNotFound(entry)),
             }
         }

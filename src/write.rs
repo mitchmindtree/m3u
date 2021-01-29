@@ -27,8 +27,8 @@ impl<W, E> Writer<W, E>
 
     fn new_inner(writer: W, line_buffer: Vec<u8>) -> Self {
         Writer {
-            writer: writer,
-            line_buffer: line_buffer,
+            writer,
+            line_buffer,
             entry: std::marker::PhantomData,
         }
     }

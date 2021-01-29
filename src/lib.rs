@@ -78,7 +78,10 @@ impl Entry {
         where N: Into<String>,
     {
         EntryExt {
-            extinf: ExtInf { duration_secs: duration_secs, name: name.into() },
+            extinf: ExtInf {
+                duration_secs,
+                name: name.into(),
+            },
             entry: self,
         }
     }

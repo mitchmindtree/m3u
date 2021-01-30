@@ -85,6 +85,17 @@ where
     /// Attempt to write the given `EntryExt` to the given `writer`.
     ///
     /// First writes the `#EXTINF:` line, then writes the entry line.
+    /// # Example
+    /// ```rust
+    /// let mut buff=std::io::Cursor::new(vec![]);
+    /// {
+    /// let mut writer=m3u::EntryExtWriter::new_ext(&mut buff).expect("Unable to open writer");
+    /// let entry = m3u::url_entry("http://server/stream.mp4").unwrap().extend(-1.0, "Channel 1");
+    /// writer.write_entry(&entry);
+    /// }
+    /// let result=std::str::from_utf8(buff.get_ref()).unwrap();
+    /// assert_eq!(result, "#EXTM3U\n#EXTINF:-1,Channel 1\nhttp://server/stream.mp4\n");
+    /// ```
     pub fn write_entry(&mut self, entry_ext: &EntryExt) -> Result<(), std::io::Error> {
         let Writer { ref mut writer, ref mut line_buffer, .. } = *self;
         line_buffer.clear();

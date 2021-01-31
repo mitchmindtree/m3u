@@ -11,3 +11,6 @@ homepage = "https://github.com/mitchmindtree/m3u"
 
 [dependencies]
 url = "1.2.4"
+
+[features]
+iptv = []

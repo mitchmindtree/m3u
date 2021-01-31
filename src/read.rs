@@ -398,3 +398,6 @@ impl std::fmt::Display for ReadEntryExtError {
         }
     }
 }
+
+#[cfg(feature = "iptv")]
+pub mod iptv;

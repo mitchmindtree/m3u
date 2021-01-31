@@ -129,3 +129,6 @@ where
         self.writer.flush().ok();
     }
 }
+
+#[cfg(feature = "iptv")]
+pub mod iptv;

@@ -5,8 +5,6 @@
 //! There is no formal specification for the **M3U** format. This crate is implemented based on the
 //! rough description under the format's current wikipedia entry.
 
-#![warn(missing_docs)]
-
 pub extern crate url;
 
 mod read;
@@ -80,7 +78,10 @@ impl Entry {
         where N: Into<String>,
     {
         EntryExt {
-            extinf: ExtInf { duration_secs: duration_secs, name: name.into() },
+            extinf: ExtInf {
+                duration_secs,
+                name: name.into(),
+            },
             entry: self,
         }
     }
@@ -96,5 +97,5 @@ pub fn path_entry<P>(path: P) -> Entry
 
 /// A helper function to simplify creation of the `Entry`'s `Url` variant.
 pub fn url_entry(url: &str) -> Result<Entry, url::ParseError> {
-    Url::parse(url).map(|url| Entry::Url(url))
+    Url::parse(url).map(Entry::Url)
 }

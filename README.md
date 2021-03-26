@@ -101,6 +101,49 @@ Sample.mp3
 Greatest Hits\Example.ogg
 ```
 
+### IPTV M3U
+
+This lib can also read M3U files for IPTV lists, like the one above. An unofficial specification can be found at https://wiki.tvip.ru/en/m3u. 
+
+```m3u
+#EXTM3U
+#EXTINF:-1 tvg-id="1508" tvg-logo="http://server.com/logo/FRANCE/TF1HD.png" group-title="EUROPE | France FHD - OTT,null", FR - TF1 FHD
+http://server.com/live/1508.ts
+#EXTINF:-1 tvg-id="1507" tvg-logo="http://server.com/logo/FRANCE/FRANCE2HD.png" group-title="EUROPE | France FHD - OTT,null", FR - FRANCE 2 FHD
+http://server.com/live/1507.ts
+#EXTINF:-1 tvg-id="1506" tvg-logo="http://server.com/logo/FRANCE/FRANCE3HD.png" group-title="EUROPE | France FHD - OTT,null", FR - FRANCE 3 FHD
+http://server.com/live/1506.ts
+```
+
+The playlist is read the same way any other extended M3U list, and properties specific to IPTV are stored in `iptv_properties` field of `IptvExtInf` struct. For exemple, to list all channel groups present in a M3U file :
+
+```rust
+extern crate m3u;
+use m3u::Reader;
+
+fn main() { 
+   // Read the playlist from the file. 
+    let filename = std::env::args().nth(1).unwrap();
+    let mut groups: Vec<String>  = Reader::open_iptv(filename)
+        .unwrap()
+        .iptv_entries()
+        .filter_map(|e|e.unwrap().extinf.iptv_props.remove("group-title"))
+        .collect() ; 
+    groups.sort();
+    groups.dedup();
+    for s in groups{
+        println!("{}",s);
+    }
+}
+```
+
+To use IPTV features, you must enable "iptv" feature in `Cargo.toml`:
+
+```toml
+[dependencies]
+m3u = {version = "*", features = "iptv"}
+```
+
 License
 -------
 

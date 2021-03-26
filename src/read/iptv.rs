@@ -16,5 +16,3 @@ where
 
 mod iptv_entry_reader;
 mod next_iptv_entry;
-mod read_extinf;
-mod split;

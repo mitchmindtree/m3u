@@ -1,5 +1,5 @@
 use super::Writer;
-use crate::iptv::{IptvEntry, IptvProps};
+use crate::iptv::IptvEntry;
 use std::io::Write;
 
 /// A `Writer` that specifically writes `IptvEntry`es.
@@ -17,20 +17,6 @@ where
         writeln!(&mut line_buffer, "#EXTM3U")?;
         writer.write_all(&line_buffer)?;
         Ok(Self::new_inner(writer, line_buffer))
-    }
-
-    /// Converts IPTV properties to string usable in M3U
-    /// # Examples
-    /// assert_eq!(iptv_props_to_string(HashMap::new()), "".to_string());
-    /// assert_eq!(iptv_props_to_string(iptv!("tvg-group"="fr")), r#" tvg-group="fr""#);
-    fn iptv_props_to_string(props: &IptvProps) -> String {
-        props
-            .iter()
-            .map(|(key, value)| format!(r#" {}="{}""#, key, value))
-            .fold(String::new(), |mut buffer, s| {
-                buffer.push_str(&s);
-                buffer
-            })
     }
 
     /// Attempt to write the given `IptvEntry` to the given `writer`.
@@ -58,13 +44,8 @@ where
             ..
         } = *self;
         line_buffer.clear();
-        let extinf = &entry_ext.extinf;
-        let iptv = Self::iptv_props_to_string(&extinf.iptv_props);
-        writeln!(
-            line_buffer,
-            "#EXTINF:{}{},{}",
-            extinf.duration_secs, iptv, &extinf.name
-        )?;
+        let extinf = &entry_ext.raw_extinf;
+        writeln!(line_buffer, "{}", extinf)?;
         super::write_entry(line_buffer, &entry_ext.entry)?;
         writer.write_all(line_buffer)
     }

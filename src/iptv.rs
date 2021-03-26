@@ -1,27 +1,65 @@
+pub use self::iptv_props::IptvProps;
+use self::parse_extinf::parse_extinf;
 use super::{Entry, EntryExt};
 pub use read::iptv::IptvEntries;
-use std::collections::*;
 pub use write::iptv::IptvEntryWriter;
+
 /// An entry with some associated extra information.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct IptvEntry {
     /// The M3U entry. Can be either a `Path` or `Url`.
     pub entry: Entry,
     /// Extra information associated with the M3U entry.
-    pub extinf: IptvExtInf,
+    pub parsed_extinf: Option<Result<IptvExtInf, ParseExtInfError>>,
+    pub raw_extinf: String,
 }
 
+impl PartialEq for IptvEntry {
+    fn eq(&self, other: &IptvEntry) -> bool {
+        self.entry == other.entry
+            && (self.raw_extinf == other.raw_extinf || self.parsed_extinf == other.parsed_extinf)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ParseExtInfError(String);
+
+impl IptvEntry {
+    pub fn parsed_extinf(&mut self) -> &Result<IptvExtInf, ParseExtInfError> {
+        if self.parsed_extinf.is_none() {
+            self.parsed_extinf = match parse_extinf(&self.raw_extinf) {
+                None => Some(Err(ParseExtInfError(self.raw_extinf.clone()))),
+                Some(extinf) => Some(Ok(extinf)),
+            };
+        }
+        &self.parsed_extinf.as_ref().unwrap()
+    }
+}
 /// Extra information associated with an M3U entry.
 #[derive(Clone, Debug, PartialEq)]
 pub struct IptvExtInf {
     /// The duration of the media's runtime in seconds.
     ///
     /// Note that some `m3u` extended formats specify streams with a `-1` duration.
-    pub duration_secs: f64,
+    duration_secs: f64,
     /// The name of the media. E.g. "Aphex Twin - Windowlicker".
-    pub name: String,
+    name: String,
     /// The properties for IPTV compatible players
     pub iptv_props: IptvProps,
+}
+
+impl IptvExtInf {
+    pub fn new(duration_secs: f64, name: String, iptv_props: IptvProps) -> Self {
+        IptvExtInf {
+            duration_secs,
+            name,
+            iptv_props,
+        }
+    }
+    fn to_string(&self) -> String {
+        let iptv = self.iptv_props.to_string();
+        format!("#EXTINF:{}{},{}", self.duration_secs, iptv, self.name)
+    }
 }
 
 impl EntryExt {
@@ -30,47 +68,27 @@ impl EntryExt {
     /// ```rust
     /// #[macro_use]
     /// use m3u::iptv;
-    /// let entry = m3u::url_entry("http://server/stream.mp4")
+    /// let mut entry = m3u::url_entry("http://server/stream.mp4")
     ///  .unwrap()
     ///  .extend(-1.0, "Channel 1")
     ///  .with_iptv(iptv!("tvg-id"="id channel 1","tvg-logo"="http://server/logo.png"));
-    ///  assert_eq!(entry.extinf.iptv_props["tvg-id"], "id channel 1");
+    ///  assert_eq!(entry.parsed_extinf().as_ref().unwrap().iptv_props["tvg-id"], "id channel 1");
     ///  ```
     pub fn with_iptv(self, props: IptvProps) -> IptvEntry {
+        let parsed_extinf = IptvExtInf {
+            duration_secs: self.extinf.duration_secs,
+            name: self.extinf.name,
+            iptv_props: props,
+        };
+        let raw_extinf = parsed_extinf.to_string();
+
         IptvEntry {
             entry: self.entry,
-            extinf: IptvExtInf {
-                duration_secs: self.extinf.duration_secs,
-                name: self.extinf.name,
-                iptv_props: props,
-            },
+            parsed_extinf: Some(Ok(parsed_extinf)),
+            raw_extinf,
         }
     }
 }
 
-pub type IptvProps = BTreeMap<String, String>;
-
-/// A macro to easily create a HashMap containing IPTV properties
-/// # Examples
-/// ```rust
-/// use {m3u::iptv, std::collections::BTreeMap};
-/// assert_eq!(iptv!(), BTreeMap::new());
-/// let actual=iptv!("tvg-id"="mychannel","group-title"="mygroup");
-/// let expected=[
-///     ("tvg-id".to_string(), "mychannel".to_string()),
-///     ("group-title".to_string(), "mygroup".to_string())
-/// ].iter().cloned().collect();
-/// assert_eq!(actual, expected);
-/// ```
-#[macro_export]
-macro_rules! iptv(
-    { $($key:tt = $value:expr),* } => {
-        {
-            let mut m= iptv::IptvProps::new();
-            $(
-                m.insert($key.to_string(), $value.to_string());
-            )*
-            m
-        }
-     };
-);
+mod iptv_props;
+mod parse_extinf;

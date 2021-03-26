@@ -4,7 +4,7 @@ extern crate m3u;
 #[test]
 fn read() {
     use m3u::iptv;
-    let expected = vec![
+    let mut expected = vec![
         m3u::url_entry(r"http://borg.hopto.org:8090/html/greetings.mp4")
             .unwrap()
             .extend(-1.0, "#### BEIN SPORT #####")
@@ -18,16 +18,20 @@ fn read() {
 
     let path = std::path::Path::new("tests/iptv.m3u");
     let mut reader = m3u::Reader::open_iptv(path).unwrap();
+    //TODO implement and uncomment
+    //let entry_exts = reader.regular_iptv_entries();
+    //dbg!(entry_exts);
     let entry_exts = reader.iptv_entries();
-    dbg!(entry_exts);
-    let entry_exts = reader.iptv_entries();
-    let entries: Vec<_> = entry_exts
+    let mut entries: Vec<_> = entry_exts
         .inspect(|e| println!("entry:{:?}", e))
         .map(|e| e.unwrap())
         .collect();
-    for entry in entries.iter().take(1) {
-        for (key, value) in entry.extinf.iptv_props.iter() {
-            assert_eq!(&expected[0].extinf.iptv_props[key], value);
+    for entry in entries.iter_mut().take(1) {
+        for (key, value) in entry.parsed_extinf().as_ref().unwrap().iptv_props.iter() {
+            assert_eq!(
+                &expected[0].parsed_extinf().as_ref().unwrap().iptv_props[key],
+                value
+            );
         }
     }
     assert_eq!(&entries, &expected);

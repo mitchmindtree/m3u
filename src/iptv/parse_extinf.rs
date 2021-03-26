@@ -1,4 +1,4 @@
-use super::split::{next_closing_mark_index, split_key_val};
+use self::split::{next_closing_mark_index, split_key_val};
 use crate::iptv::{IptvExtInf, IptvProps};
 
 /// splits /EXTINF:-1( +[\w-]=".*")*,.*/
@@ -9,7 +9,7 @@ use crate::iptv::{IptvExtInf, IptvProps};
 ///         name:"TF1",
 ///         props:iptv!("tvg-id"="", "tvg-name"="TF1")
 ///     }
-pub fn read_extinf(line: &str) -> Option<IptvExtInf> {
+pub fn parse_extinf(line: &str) -> Option<IptvExtInf> {
     let line = drop_extinf_tag(line)?;
     let (sep_index, _) = line.match_indices(|c| c == ',' || c == ' ').next()?;
     let duration_str = &line[0..sep_index];
@@ -36,6 +36,8 @@ pub fn read_extinf(line: &str) -> Option<IptvExtInf> {
 fn drop_extinf_tag(line: &str) -> Option<&str> {
     line.get(8..)
 }
+
+mod split;
 
 #[cfg(test)]
 mod test;

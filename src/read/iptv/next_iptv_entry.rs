@@ -1,4 +1,3 @@
-use super::read_extinf::read_extinf;
 use super::{read_entry, read_next_entry, ReadEntryExtError};
 use crate::iptv::IptvEntry;
 use std::io::BufRead;
@@ -25,8 +24,7 @@ pub fn next_iptv_entry<R: BufRead>(
             return Ok(None);
         }
 
-        let extinf = {
-            //let line = line_buffer.trim_start();
+        let extinf_line: &str = {
             let line = line_buffer.trim();
 
             match line.chars().next() {
@@ -37,7 +35,7 @@ pub fn next_iptv_entry<R: BufRead>(
                     const TAG: &str = "#EXTINF:";
                     if line.len() >= TAG.len() && &line[..TAG.len()] == TAG {
                         // We've found the "#EXTINF:" tag.
-                        read_extinf(line)
+                        line
                     } else {
                         // Skip comments.
                         continue;
@@ -54,14 +52,16 @@ pub fn next_iptv_entry<R: BufRead>(
         };
 
         // Read the next non-empty, non-comment line as an entry.
-        let entry = match read_next_entry(reader, line_buffer)? {
+        let mut line_buffer = String::new();
+        match read_next_entry(reader, &mut line_buffer)? {
             None => return Ok(None),
-            Some(entry) => entry,
-        };
-
-        return match extinf {
-            Some(extinf) => Ok(Some(IptvEntry { entry, extinf })),
-            None => Err(ReadEntryExtError::ExtInfNotFound(entry)),
+            Some(entry) => {
+                return Ok(Some(IptvEntry {
+                    entry,
+                    parsed_extinf: None,
+                    raw_extinf: extinf_line.to_string(),
+                }))
+            }
         };
     }
 }
@@ -74,14 +74,16 @@ fn test() {
     http://toto"#;
     let mut reader = m3u.as_bytes();
     let mut buffer = String::new();
-    let actual = next_iptv_entry(&mut reader, &mut buffer).unwrap().unwrap();
+    let mut actual = next_iptv_entry(&mut reader, &mut buffer).unwrap().unwrap();
+    actual.parsed_extinf();
     let expected = IptvEntry {
         entry: url_entry("http://toto").unwrap(),
-        extinf: IptvExtInf {
-            duration_secs: -1.0,
-            name: "Titre 1".into(),
-            iptv_props: IptvProps::new(),
-        },
+        raw_extinf: "#EXTINF:-1,Titre 1".to_string(),
+        parsed_extinf: Some(Ok(IptvExtInf::new(
+            -1.0,
+            "Titre 1".into(),
+            IptvProps::new(),
+        ))),
     };
     assert_eq!(actual, expected);
 }
